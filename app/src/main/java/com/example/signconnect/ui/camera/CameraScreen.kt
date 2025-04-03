@@ -10,6 +10,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -27,11 +28,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -68,6 +73,7 @@ import java.util.concurrent.Executors
 
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.draw.clip
 import kotlinx.coroutines.launch
 
 @Composable
@@ -190,9 +196,10 @@ fun CameraScreen(
             // Configuración para la grabación de video
             val recorder = Recorder.Builder()
                 .setQualitySelector(QualitySelector.from(
-                    Quality.HD,
-                    FallbackStrategy.higherQualityOrLowerThan(Quality.SD)
+                    Quality.SD,
+                    FallbackStrategy.lowerQualityOrHigherThan(Quality.SD)
                 ))
+                .setAspectRatio(AspectRatio.RATIO_4_3)
                 .build()
 
             videoCapture = VideoCapture.withOutput(recorder)
@@ -270,11 +277,20 @@ fun CameraScreen(
         ) {
             if (hasCameraPermission && hasAudioPermission) {
                 // Vista de la cámara - IMPORTANTE: usa fillMaxSize() para el AndroidView
-                AndroidView(
-                    factory = { previewView },
-                    modifier = Modifier.fillMaxSize()
-                    // El update callback ya no configura la cámara
-                )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .aspectRatio(1f) // Forzar aspecto cuadrado 1:1
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color.Black),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AndroidView(
+                        factory = { previewView },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
 
                 // UI encima de la cámara
                 Column(
@@ -382,9 +398,9 @@ fun CameraScreen(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             CircularProgressIndicator()
-                            Modifier.padding(top = 8.dp)
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Procesando video...",
+                                text = (uiState as CameraUIState.Loading).message,
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.primary
                             )

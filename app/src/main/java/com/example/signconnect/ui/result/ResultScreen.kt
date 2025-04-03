@@ -47,6 +47,7 @@ import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import com.example.signconnect.data.model.ApiResponse
 import com.example.signconnect.data.model.Prediction
+import com.example.signconnect.util.ClassNameUtils
 import com.google.gson.Gson
 
 
@@ -257,6 +258,9 @@ fun PredictionItem(prediction: Prediction) {
         else -> MaterialTheme.colorScheme.tertiaryContainer
     }
 
+    val readableClassName = ClassNameUtils.getReadableClassName(prediction.className)
+    Log.d("PredictionItem", "Clase traducida: '$readableClassName'")
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -274,7 +278,7 @@ fun PredictionItem(prediction: Prediction) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${prediction.rank}. ${prediction.className}",
+                    text = "${prediction.rank}. $readableClassName",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = if (prediction.rank == 1) FontWeight.Bold else FontWeight.Normal
                 )
